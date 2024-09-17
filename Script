@@ -193,12 +193,47 @@ function solveProblemLoop() {
     setTimeout(solveProblemLoop, 100); // Repeat every 0.1 seconds
 }
 
+// Function to create and display the Notes button on the rice counter
+function createNotesButton() {
+    const riceCounter = document.querySelector(".rice-counter"); // Assuming this is the class of the rice counter
+    if (!riceCounter) {
+        console.error("Rice counter not found.");
+        return;
+    }
+
+    const notesButton = createElement('button', {
+        id: 'notes-button',
+        textContent: 'Notes',
+        style: {
+            position: 'absolute',
+            backgroundColor: '#ff5733', // Bright color for visibility
+            color: 'white',
+            fontSize: '20px',
+            padding: '10px 15px',
+            border: 'none',
+            borderRadius: '10px',
+            cursor: 'pointer',
+            zIndex: '10000',
+            top: '50px', // Adjust positioning as needed
+            right: '20px',
+        },
+    });
+
+    notesButton.onclick = () => {
+        window.open('https://forms.gle/M4dNsLhypqAJQjs58', '_blank');
+    };
+
+    riceCounter.appendChild(notesButton); // Append button to the rice counter
+}
+
 // Main function to initialize the overlay, menu, and start solving problems
 function initializeHack() {
     createPersistentOverlay();
     createModMenu();
+    createNotesButton(); // Create the Notes button on the rice counter
     solveProblemLoop(); // Start the continuous solving process
 }
 
 // Initialize and start the function
 initializeHack();
+
