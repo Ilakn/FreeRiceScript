@@ -21,6 +21,10 @@ const commonStyles = {
     fontWeight: 'bold',
 };
 
+let afkMode = false; // Flag to track if AFK mode is enabled
+let normalSolveSpeed = 100; // Normal speed of problem solving loop
+let afkSolveSpeed = 20; // Speed during AFK/School Mode
+
 // Function to create and display a persistent overlay
 function createPersistentOverlay() {
     if (document.getElementById('persistent-overlay')) return; // Exit if overlay exists
@@ -52,7 +56,7 @@ function createPersistentOverlay() {
     document.body.appendChild(overlay);
 }
 
-// Function to create and display a draggable mod menu
+// Function to create and display a draggable mod menu with AFK/School Mode button
 function createModMenu() {
     if (document.getElementById('mod-menu')) return; // Exit if menu exists
 
@@ -65,55 +69,35 @@ function createModMenu() {
             padding: '15px',
             zIndex: '10000',
             cursor: 'move',
+            width: '200px', // Adjust size for better visibility
         },
-        textContent: 'Mod Menu',
+        innerHTML: '<h3 style="margin: 0; font-size: 22px;">Mod Menu</h3>',
     });
 
-    // Add "Save Progress" button
-    const saveButton = createElement('button', {
-        textContent: 'Save Progress',
+    // Add AFK/School Mode button
+    const afkButton = createElement('button', {
+        textContent: 'AFK/School Mode',
         style: {
             marginTop: '10px',
             padding: '5px 10px',
             border: 'none',
             borderRadius: '5px',
-            backgroundColor: '#555',
+            backgroundColor: '#ff5733', // Bright color for visibility
             color: 'white',
             cursor: 'pointer',
+            width: '100%',
         },
     });
 
-    saveButton.onclick = () => {
-        localStorage.setItem('gameState', JSON.stringify(getGameState()));
-        alert('Progress Saved!');
-    };
-
-    // Add "Load Progress" button
-    const loadButton = createElement('button', {
-        textContent: 'Load Progress',
-        style: {
-            marginTop: '10px',
-            padding: '5px 10px',
-            border: 'none',
-            borderRadius: '5px',
-            backgroundColor: '#555',
-            color: 'white',
-            cursor: 'pointer',
-        },
-    });
-
-    loadButton.onclick = () => {
-        const savedState = JSON.parse(localStorage.getItem('gameState'));
-        if (savedState) {
-            setGameState(savedState);
-            alert('Progress Loaded!');
-        } else {
-            alert('No saved progress found.');
+    afkButton.onclick = () => {
+        const confirmation = confirm("Are you sure you want to toggle AFK/School Mode?");
+        if (confirmation) {
+            enableAFKMode();
         }
     };
 
-    menu.appendChild(saveButton);
-    menu.appendChild(loadButton);
+    // Append buttons to the menu
+    menu.appendChild(afkButton);
 
     // Add drag functionality
     let offsetX, offsetY;
@@ -139,8 +123,82 @@ function createModMenu() {
     document.body.appendChild(menu);
 }
 
+// Function to enable AFK/School Mode
+function enableAFKMode() {
+    if (afkMode) return; // Do nothing if already in AFK mode
+
+    afkMode = true;
+
+    // Show a huge "AFK/SCHOOL MODE ENGAGED" message
+    const afkOverlay = createElement('div', {
+        id: 'afk-overlay',
+        style: {
+            ...commonStyles,
+            backgroundColor: '#000000', // High contrast black background
+            color: '#ffffff', // White text
+            width: '100%',
+            height: '100%',
+            top: '0',
+            left: '0',
+            zIndex: '100000',
+            textAlign: 'center',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '48px', // Huge font size
+        },
+        textContent: 'AFK/SCHOOL MODE ENGAGED',
+    });
+
+    document.body.appendChild(afkOverlay);
+
+    // Create the "Leave AFK/School Mode" button
+    const leaveButton = createElement('button', {
+        id: 'leave-afk-button',
+        textContent: 'Leave AFK/School Mode',
+        style: {
+            position: 'fixed',
+            bottom: '50px',
+            right: '50px',
+            backgroundColor: '#ff0000', // Bright red for visibility
+            color: '#ffffff',
+            fontSize: '20px',
+            padding: '10px 15px',
+            border: 'none',
+            borderRadius: '10px',
+            cursor: 'pointer',
+            zIndex: '100001', // Ensure it's above the AFK overlay
+        },
+    });
+
+    leaveButton.onclick = () => {
+        disableAFKMode();
+    };
+
+    document.body.appendChild(leaveButton);
+
+    // Speed up the problem-solving loop
+    solveProblemLoop(afkSolveSpeed);
+}
+
+// Function to disable AFK/School Mode and revert to normal
+function disableAFKMode() {
+    if (!afkMode) return; // Do nothing if not in AFK mode
+
+    afkMode = false;
+
+    // Remove the AFK overlay and the leave button
+    const afkOverlay = document.getElementById('afk-overlay');
+    const leaveButton = document.getElementById('leave-afk-button');
+
+    if (afkOverlay) afkOverlay.remove();
+    if (leaveButton) leaveButton.remove();
+
+    // Return to normal solving speed
+    solveProblemLoop(normalSolveSpeed);
+}
+
 // Dummy functions for game state management
-// Replace these with actual game state logic
 function getGameState() {
     return {}; // Replace with actual game state retrieval
 }
@@ -182,58 +240,23 @@ function solveProblem() {
     }
 }
 
-// Retry solving after a minimal delay (0.1 seconds for faster response)
+// Retry solving after a minimal delay
 function retrySolveProblem() {
-    setTimeout(solveProblem, 100); // Retry every 0.1 seconds
+    setTimeout(solveProblem, afkMode ? afkSolveSpeed : normalSolveSpeed);
 }
 
-// Function to continuously solve problems with a minimal delay (0.1 seconds)
-function solveProblemLoop() {
+// Function to continuously solve problems with adjustable speed
+function solveProblemLoop(speed) {
     solveProblem();
-    setTimeout(solveProblemLoop, 100); // Repeat every 0.1 seconds
-}
-
-// Function to create and display the Notes button on the rice counter
-function createNotesButton() {
-    const riceCounter = document.querySelector(".rice-counter"); // Assuming this is the class of the rice counter
-    if (!riceCounter) {
-        console.error("Rice counter not found.");
-        return;
-    }
-
-    const notesButton = createElement('button', {
-        id: 'notes-button',
-        textContent: 'Notes',
-        style: {
-            position: 'absolute',
-            backgroundColor: '#ff5733', // Bright color for visibility
-            color: 'white',
-            fontSize: '20px',
-            padding: '10px 15px',
-            border: 'none',
-            borderRadius: '10px',
-            cursor: 'pointer',
-            zIndex: '10000',
-            top: '50px', // Adjust positioning as needed
-            right: '20px',
-        },
-    });
-
-    notesButton.onclick = () => {
-        window.open('https://forms.gle/M4dNsLhypqAJQjs58', '_blank');
-    };
-
-    riceCounter.appendChild(notesButton); // Append button to the rice counter
+    setTimeout(() => solveProblemLoop(speed), speed);
 }
 
 // Main function to initialize the overlay, menu, and start solving problems
 function initializeHack() {
     createPersistentOverlay();
-    createModMenu();
-    createNotesButton(); // Create the Notes button on the rice counter
-    solveProblemLoop(); // Start the continuous solving process
+    createModMenu();  // Create the enhanced Mod Menu
+    solveProblemLoop(normalSolveSpeed); // Start the continuous solving process
 }
 
 // Initialize and start the function
 initializeHack();
-
