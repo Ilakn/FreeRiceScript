@@ -1,0 +1,173 @@
+// Function to create and display a persistent overlay
+function createPersistentOverlay() {
+    const existingOverlay = document.getElementById('persistent-overlay');
+    if (existingOverlay) {
+        return; // Exit if the overlay already exists
+    }
+
+    // Create the overlay div
+    const overlay = document.createElement('div');
+    overlay.id = 'persistent-overlay';
+    overlay.style.position = 'fixed';
+    overlay.style.bottom = '20px';
+    overlay.style.right = '20px';
+    overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.9)';
+    overlay.style.color = 'white';
+    overlay.style.padding = '20px';
+    overlay.style.borderRadius = '10px';
+    overlay.style.boxShadow = '0 0 15px rgba(0, 0, 0, 0.7)';
+    overlay.style.zIndex = '9999'; // Ensure it appears above other elements
+    overlay.style.fontFamily = 'Arial, sans-serif';
+    overlay.style.fontSize = '18px';
+    overlay.style.fontWeight = 'bold';
+    overlay.style.textAlign = 'center';
+
+    // Create the text content
+    overlay.innerHTML = `
+        <div>Ilakn</div>
+        <div>Version 3.45</div>
+        <button id="youtube-button" style="margin-top: 10px; padding: 5px 10px; border: none; border-radius: 5px; background-color: #007bff; color: white; cursor: pointer;">
+            Subscribe to OffLcer Gaming
+        </button>
+    `;
+
+    // Add click event to the YouTube button
+    const youtubeButton = overlay.querySelector('#youtube-button');
+    youtubeButton.onclick = function() {
+        window.open('https://youtube.com/@offlcergaming?si=5PExaPOmDsgxyVnd', '_blank');
+    };
+
+    // Append the overlay to the body
+    document.body.appendChild(overlay);
+}
+
+// Function to create and display a draggable mod menu
+function createModMenu() {
+    const existingMenu = document.getElementById('mod-menu');
+    if (existingMenu) {
+        return; // Exit if the menu already exists
+    }
+
+    // Create the mod menu div
+    const menu = document.createElement('div');
+    menu.id = 'mod-menu';
+    menu.style.position = 'fixed';
+    menu.style.top = '20px';
+    menu.style.left = '20px';
+    menu.style.backgroundColor = 'rgba(0, 0, 0, 0.9)';
+    menu.style.color = 'white';
+    menu.style.padding = '15px';
+    menu.style.borderRadius = '10px';
+    menu.style.boxShadow = '0 0 15px rgba(0, 0, 0, 0.7)';
+    menu.style.zIndex = '10000'; // Ensure it appears above other elements
+    menu.style.fontFamily = 'Arial, sans-serif';
+    menu.style.fontSize = '18px';
+    menu.style.fontWeight = 'bold';
+    menu.textContent = 'Mod Menu';
+
+    // Create and add "Coming Soon!" button
+    const comingSoonButton = document.createElement('button');
+    comingSoonButton.textContent = 'Coming Soon!';
+    comingSoonButton.style.marginTop = '10px';
+    comingSoonButton.style.padding = '5px 10px';
+    comingSoonButton.style.border = 'none';
+    comingSoonButton.style.borderRadius = '5px';
+    comingSoonButton.style.backgroundColor = '#555';
+    comingSoonButton.style.color = 'white';
+    comingSoonButton.style.cursor = 'pointer';
+    comingSoonButton.onclick = function() {
+        alert('Coming Soon!');
+    };
+    menu.appendChild(comingSoonButton);
+
+    // Add drag functionality
+    menu.style.cursor = 'move';
+
+    let offsetX, offsetY;
+
+    menu.onmousedown = function(event) {
+        offsetX = event.clientX - menu.getBoundingClientRect().left;
+        offsetY = event.clientY - menu.getBoundingClientRect().top;
+
+        document.onmousemove = function(event) {
+            menu.style.left = (event.clientX - offsetX) + 'px';
+            menu.style.top = (event.clientY - offsetY) + 'px';
+        };
+
+        document.onmouseup = function() {
+            document.onmousemove = null;
+            document.onmouseup = null;
+        };
+    };
+
+    // Append the menu to the body
+    document.body.appendChild(menu);
+}
+
+// Define the function for automating answers
+window.freeRiceHackFunc = function() {
+    // Create the persistent overlay and mod menu
+    createPersistentOverlay();
+    createModMenu();
+
+    // Try to get the multiplication problem text
+    const problemElement = document.querySelector(".card-title");
+
+    // If the problem element is not found, log an error and retry
+    if (!problemElement) {
+        console.error("Problem element not found. Retrying...");
+        // Retry after a short delay
+        window.freeRiceHackTimeout = setTimeout(window.freeRiceHackFunc, 100);
+        return;
+    }
+
+    // Extract and parse the problem text
+    const problem = problemElement.innerText.trim();
+    const [num1Str, num2Str] = problem.split('x').map(part => part.trim());
+
+    // Ensure both numbers are correctly parsed
+    const num1 = parseInt(num1Str, 10);
+    const num2 = parseInt(num2Str, 10);
+
+    if (isNaN(num1) || isNaN(num2)) {
+        console.error("Error parsing numbers from problem:", problem);
+        // Retry after a short delay
+        window.freeRiceHackTimeout = setTimeout(window.freeRiceHackFunc, 100);
+        return;
+    }
+
+    const answer = num1 * num2;
+
+    // Try to get all answer options
+    const options = Array.from(document.querySelectorAll(".card-button"));
+
+    if (options.length === 0) {
+        console.error("No answer options found. Retrying...");
+        // Retry after a short delay
+        window.freeRiceHackTimeout = setTimeout(window.freeRiceHackFunc, 100);
+        return;
+    }
+
+    // Find and click the correct answer
+    let answerFound = false;
+    for (const option of options) {
+        const optionValue = parseInt(option.innerText.trim(), 10);
+        if (optionValue === answer) {
+            option.click();
+            answerFound = true;
+            console.log(`Clicked on the correct answer: ${answer}`);
+            break;
+        }
+    }
+
+    if (!answerFound) {
+        console.error("Correct answer not found among the options. Retrying...");
+    }
+
+    // Schedule the function to run again after a short delay
+    clearTimeout(window.freeRiceHackTimeout);
+    window.freeRiceHackTimeout = setTimeout(window.freeRiceHackFunc, 100); // Very short delay for rapid responses
+}
+
+// Initialize and start the function with a short delay
+window.freeRiceHackTimeout = setTimeout(window.freeRiceHackFunc, 100); // Short initial delay
