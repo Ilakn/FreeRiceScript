@@ -9,7 +9,7 @@ function createElement(tag, options = {}) {
     return element;
 }
 
-// Reusable style object to minimize repetition
+// Common styles for overlay and menu
 const commonStyles = {
     position: 'fixed',
     backgroundColor: 'rgba(0, 0, 0, 0.9)',
@@ -21,7 +21,7 @@ const commonStyles = {
     fontWeight: 'bold',
 };
 
-// Function to create and display a persistent overlay 
+// Function to create and display a persistent overlay
 function createPersistentOverlay() {
     if (document.getElementById('persistent-overlay')) return; // Exit if overlay exists
 
@@ -38,7 +38,7 @@ function createPersistentOverlay() {
         innerHTML: `
             <div>Ilakn</div>
             <div>Version 3.45</div>
-            <button id="youtube-button" class="overlay-button">
+            <button id="youtube-button" class="overlay-button" style="margin-top: 10px; padding: 5px 10px; border: none; border-radius: 5px; background-color: #555; color: white; cursor: pointer;">
                 Subscribe to OffLcer Gaming
             </button>
         `,
@@ -69,9 +69,9 @@ function createModMenu() {
         textContent: 'Mod Menu',
     });
 
-    // Add "Coming Soon!" button
-    const comingSoonButton = createElement('button', {
-        textContent: 'Coming Soon!',
+    // Add "Save Progress" button
+    const saveButton = createElement('button', {
+        textContent: 'Save Progress',
         style: {
             marginTop: '10px',
             padding: '5px 10px',
@@ -83,8 +83,37 @@ function createModMenu() {
         },
     });
 
-    comingSoonButton.onclick = () => alert('Coming Soon!');
-    menu.appendChild(comingSoonButton);
+    saveButton.onclick = () => {
+        localStorage.setItem('gameState', JSON.stringify(getGameState()));
+        alert('Progress Saved!');
+    };
+
+    // Add "Load Progress" button
+    const loadButton = createElement('button', {
+        textContent: 'Load Progress',
+        style: {
+            marginTop: '10px',
+            padding: '5px 10px',
+            border: 'none',
+            borderRadius: '5px',
+            backgroundColor: '#555',
+            color: 'white',
+            cursor: 'pointer',
+        },
+    });
+
+    loadButton.onclick = () => {
+        const savedState = JSON.parse(localStorage.getItem('gameState'));
+        if (savedState) {
+            setGameState(savedState);
+            alert('Progress Loaded!');
+        } else {
+            alert('No saved progress found.');
+        }
+    };
+
+    menu.appendChild(saveButton);
+    menu.appendChild(loadButton);
 
     // Add drag functionality
     let offsetX, offsetY;
@@ -93,24 +122,40 @@ function createModMenu() {
         offsetX = event.clientX - menu.getBoundingClientRect().left;
         offsetY = event.clientY - menu.getBoundingClientRect().top;
 
-        document.onmousemove = (event) => {
+        const onMouseMove = (event) => {
             menu.style.left = `${event.clientX - offsetX}px`;
             menu.style.top = `${event.clientY - offsetY}px`;
         };
 
-        document.onmouseup = () => {
-            document.onmousemove = null;
-            document.onmouseup = null;
+        const onMouseUp = () => {
+            document.removeEventListener('mousemove', onMouseMove);
+            document.removeEventListener('mouseup', onMouseUp);
         };
+
+        document.addEventListener('mousemove', onMouseMove);
+        document.addEventListener('mouseup', onMouseUp);
     };
 
     document.body.appendChild(menu);
 }
 
+// Dummy functions for game state management
+// Replace these with actual game state logic
+function getGameState() {
+    return {}; // Replace with actual game state retrieval
+}
+
+function setGameState(state) {
+    // Replace with actual game state setting logic
+}
+
 // Function to handle the problem-solving logic
 function solveProblem() {
     const problemElement = document.querySelector(".card-title");
-    if (!problemElement) return retrySolveProblem(); // Retry if problem element not found
+    if (!problemElement) {
+        console.error("Problem element not found. Retrying...");
+        return retrySolveProblem(); // Retry if problem element not found
+    }
 
     const problem = problemElement.innerText.trim();
     const [num1Str, num2Str] = problem.split('x').map(str => str.trim());
@@ -118,7 +163,10 @@ function solveProblem() {
     // Ensure correct parsing of numbers
     const num1 = parseInt(num1Str, 10);
     const num2 = parseInt(num2Str, 10);
-    if (isNaN(num1) || isNaN(num2)) return retrySolveProblem(); // Retry if numbers invalid
+    if (isNaN(num1) || isNaN(num2)) {
+        console.error("Error parsing numbers:", problem);
+        return retrySolveProblem(); // Retry if numbers invalid
+    }
 
     const answer = num1 * num2;
     const options = Array.from(document.querySelectorAll(".card-button"));
@@ -127,29 +175,30 @@ function solveProblem() {
     const correctOption = options.find(option => parseInt(option.innerText.trim(), 10) === answer);
     if (correctOption) {
         correctOption.click();
+        console.log(`Clicked on the correct answer: ${answer}`);
     } else {
-        retrySolveProblem();
+        console.error("Correct answer not found among options. Retrying...");
+        retrySolveProblem(); // Retry if correct option not found
     }
 }
 
-// Retry solving after a 0.25-second delay
+// Retry solving after a minimal delay (0.1 seconds for faster response)
 function retrySolveProblem() {
-    clearTimeout(window.freeRiceHackTimeout);
-    window.freeRiceHackTimeout = setTimeout(solveProblemLoop, 250); // Retry every 0.25 seconds
+    setTimeout(solveProblem, 100); // Retry every 0.1 seconds
 }
 
-// Function to continuously solve problems with a 0.25-second delay
+// Function to continuously solve problems with a minimal delay (0.1 seconds)
 function solveProblemLoop() {
     solveProblem();
-    window.freeRiceHackTimeout = setTimeout(solveProblemLoop, 250); // Repeat every 0.25 seconds
+    setTimeout(solveProblemLoop, 100); // Repeat every 0.1 seconds
 }
 
 // Main function to initialize the overlay, menu, and start solving problems
-window.freeRiceHackFunc = function() {
+function initializeHack() {
     createPersistentOverlay();
     createModMenu();
     solveProblemLoop(); // Start the continuous solving process
-};
+}
 
 // Initialize and start the function
-window.freeRiceHackFunc();
+initializeHack();
