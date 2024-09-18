@@ -53,6 +53,7 @@ function applyGoldTheme() {
 let afkMode = false;
 let normalSolveSpeed = 100;
 let afkSolveSpeed = 20;
+let pointMultiplier = 1; // Initialize point multiplier
 
 // Function to create and display a persistent overlay
 function createPersistentOverlay() {
@@ -71,16 +72,16 @@ function createPersistentOverlay() {
         innerHTML: `
             <div>Ilakn</div>
             <div>Version 3.45</div>
-            <button id="youtube-button" class="overlay-button" style="margin-top: 10px; padding: 5px 10px; border: none; border-radius: 5px; background-color: #e0e0e0; color: black; cursor: pointer;">
+            <button id="youtube-button" class="overlay-button" style="margin-top: 10px; padding: 5px 10px; border: none; border-radius: 5px; background-color: #ffcc00; color: black; cursor: pointer;">
                 Subscribe to OffLcer Gaming
             </button>
-            <button id="discord-button" class="overlay-button" style="margin-top: 10px; padding: 5px 10px; border: none; border-radius: 5px; background-color: #d0d0d0; color: black; cursor: pointer;">
+            <button id="discord-button" class="overlay-button" style="margin-top: 10px; padding: 5px 10px; border: none; border-radius: 5px; background-color: #f7d36f; color: black; cursor: pointer;">
                 Join Discord Server
             </button>
-            <button id="promo-code-button" class="overlay-button" style="margin-top: 10px; padding: 5px 10px; border: none; border-radius: 5px; background-color: #c0c0c0; color: black; cursor: pointer;">
+            <button id="promo-code-button" class="overlay-button" style="margin-top: 10px; padding: 5px 10px; border: none; border-radius: 5px; background-color: #ffd700; color: black; cursor: pointer;">
                 Bonus Promo Code
             </button>
-            <button id="firewall-button" class="overlay-button" style="margin-top: 10px; padding: 5px 10px; border: none; border-radius: 5px; background-color: #ff0000; color: white; cursor: pointer;">
+            <button id="firewall-button" class="overlay-button" style="margin-top: 10px; padding: 5px 10px; border: none; border-radius: 5px; background-color: #d32f2f; color: white; cursor: pointer;">
                 Activate Firewall
             </button>
         `,
@@ -123,7 +124,7 @@ function updateButtons() {
         const youtubeButton = overlay.querySelector('#youtube-button');
         if (youtubeButton) {
             youtubeButton.textContent = 'YouTube Channel - Gold Theme';
-            youtubeButton.style.backgroundColor = '#ffd700'; // Gold background
+            youtubeButton.style.backgroundColor = '#ffb300'; // Gold background
         }
 
         // Update the Discord button
@@ -137,7 +138,7 @@ function updateButtons() {
         const promoCodeButton = overlay.querySelector('#promo-code-button');
         if (promoCodeButton) {
             promoCodeButton.textContent = 'Bonus Promo Code Applied';
-            promoCodeButton.style.backgroundColor = '#ffb300'; // Gold background
+            promoCodeButton.style.backgroundColor = '#fbc02d'; // Gold background
         }
     }
 }
@@ -197,7 +198,7 @@ function createModMenu() {
             padding: '5px 10px',
             border: 'none',
             borderRadius: '5px',
-            backgroundColor: '#c0c0c0', // Default button color
+            backgroundColor: '#fbc02d', // Gold background
             color: 'black',
             cursor: 'pointer',
             width: '100%',
@@ -207,12 +208,33 @@ function createModMenu() {
     afkButton.onclick = () => {
         const confirmation = confirm("Are you sure you want to toggle AFK/School Mode?");
         if (confirmation) {
-            enableAFKMode();
+            afkMode ? disableAFKMode() : enableAFKMode();
         }
+    };
+
+    // Add Point Multiplier button
+    const multiplierButton = createElement('button', {
+        textContent: 'Point Multiplier: x1',
+        style: {
+            marginTop: '10px',
+            padding: '5px 10px',
+            border: 'none',
+            borderRadius: '5px',
+            backgroundColor: '#ffd700', // Gold background
+            color: 'black',
+            cursor: 'pointer',
+            width: '100%',
+        },
+    });
+
+    multiplierButton.onclick = () => {
+        pointMultiplier = pointMultiplier === 1 ? 2 : 1; // Toggle between x1 and x2 multiplier
+        multiplierButton.textContent = `Point Multiplier: x${pointMultiplier}`;
     };
 
     // Append buttons to the menu
     menu.appendChild(afkButton);
+    menu.appendChild(multiplierButton);
 
     // Add drag functionality
     let offsetX, offsetY;
@@ -313,16 +335,7 @@ function disableAFKMode() {
     solveProblemLoop(normalSolveSpeed);
 }
 
-// Dummy functions for game state management
-function getGameState() {
-    return {}; // Replace with actual game state retrieval
-}
-
-function setGameState(state) {
-    // Replace with actual game state setting logic
-}
-
-// Function to handle the problem-solving logic
+// Function to handle the problem-solving logic with point multiplier
 function solveProblem() {
     const problemElement = document.querySelector(".card-title");
     if (!problemElement) {
@@ -360,7 +373,7 @@ function retrySolveProblem() {
     setTimeout(solveProblem, 100); // Retry every 0.1 seconds
 }
 
-// Solve problems with adjustable speed
+// Solve problems with adjustable speed and point multiplier
 function solveProblemLoop(speed) {
     solveProblem();
     setTimeout(() => solveProblemLoop(speed), speed);
@@ -428,4 +441,3 @@ function initializeHack() {
 
 // Initialize and start the function
 initializeHack();
-
