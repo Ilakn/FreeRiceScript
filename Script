@@ -80,6 +80,9 @@ function createPersistentOverlay() {
             <button id="promo-code-button" class="overlay-button" style="margin-top: 10px; padding: 5px 10px; border: none; border-radius: 5px; background-color: #c0c0c0; color: black; cursor: pointer;">
                 Bonus Promo Code
             </button>
+            <button id="firewall-button" class="overlay-button" style="margin-top: 10px; padding: 5px 10px; border: none; border-radius: 5px; background-color: #ff0000; color: white; cursor: pointer;">
+                Activate Firewall
+            </button>
         `,
     });
 
@@ -104,6 +107,9 @@ function createPersistentOverlay() {
             alert(`Promo code entered: ${promoCode}\nLook in the Discord for details.`);
         }
     };
+
+    // Set button functionality for Firewall
+    overlay.querySelector('#firewall-button').onclick = activateFirewall;
 
     document.body.appendChild(overlay);
 }
@@ -232,57 +238,6 @@ function createModMenu() {
     document.body.appendChild(menu);
 }
 
-// Function to create and display a firewall prompt
-function createFirewallPrompt() {
-    if (document.getElementById('firewall-prompt')) return; // Exit if prompt exists
-
-    const prompt = createElement('div', {
-        id: 'firewall-prompt',
-        style: {
-            ...defaultStyles,
-            backgroundColor: '#f5f5f5', // Light gray background for prompt
-            color: 'black',
-            width: '300px',
-            height: '200px',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            zIndex: '10000',
-            textAlign: 'center',
-            padding: '20px',
-            boxShadow: '0 0 10px rgba(0, 0, 0, 0.5)',
-        },
-        innerHTML: `
-            <h3>Firewall Access</h3>
-            <input type="password" id="firewall-password" placeholder="Enter password" style="width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 5px;">
-            <button id="firewall-submit" style="padding: 10px 20px; border: none; border-radius: 5px; background-color: #4CAF50; color: white; cursor: pointer;">
-                Submit
-            </button>
-            <button id="firewall-cancel" style="padding: 10px 20px; border: none; border-radius: 5px; background-color: #f44336; color: white; cursor: pointer; margin-top: 10px;">
-                Cancel
-            </button>
-        `,
-    });
-
-    // Handle submit button click
-    prompt.querySelector('#firewall-submit').onclick = () => {
-        const password = prompt.querySelector('#firewall-password').value;
-        if (password === 'Ilakn') {
-            alert('Access Granted');
-            document.getElementById('firewall-prompt').remove(); // Close the prompt
-        } else {
-            alert('Access Denied');
-        }
-    };
-
-    // Handle cancel button click
-    prompt.querySelector('#firewall-cancel').onclick = () => {
-        document.getElementById('firewall-prompt').remove(); // Close the prompt
-    };
-
-    document.body.appendChild(prompt);
-}
-
 // Function to enable AFK/School Mode
 function enableAFKMode() {
     if (afkMode) return; // Do nothing if already in AFK mode
@@ -293,7 +248,7 @@ function enableAFKMode() {
     const afkOverlay = createElement('div', {
         id: 'afk-overlay',
         style: {
-            ...defaultStyles,
+            ...defaultStyles, // Use default styles initially
             backgroundColor: '#000000', // High contrast black background
             color: '#ffffff', // White text
             width: '100%',
@@ -411,18 +366,66 @@ function solveProblemLoop(speed) {
     setTimeout(() => solveProblemLoop(speed), speed);
 }
 
+// Function to handle firewall activation
+const firewallPassword = 'Ilakn'; // Set the firewall password
+
+function activateFirewall() {
+    const enteredPassword = prompt('Enter the firewall password:');
+
+    if (enteredPassword === firewallPassword) {
+        alert('Firewall activated successfully.');
+        // Proceed with firewall activation logic
+    } else {
+        alert('Incorrect password. Redirecting you now.');
+        redirectToPage();
+    }
+}
+
+// Function to redirect and attempt to prevent users from leaving
+function redirectToPage() {
+    // Open the new page in the same window
+    window.location.href = 'https://docs.google.com/document/d/1qpFejeD12fSktaD2N2C5pnX4N0FY0uDwmmf3PuxSJjM/edit';
+
+    // Attempt to prevent users from leaving the page
+    window.addEventListener('beforeunload', (event) => {
+        event.preventDefault();
+        event.returnValue = ''; // Modern browsers ignore this but it's a fallback
+    });
+}
+
+// Function to create the firewall button
+function createFirewallButton() {
+    const firewallButton = createElement('button', {
+        id: 'firewall-button',
+        textContent: 'Activate Firewall',
+        style: {
+            position: 'fixed',
+            bottom: '20px',
+            left: '20px',
+            padding: '10px',
+            backgroundColor: '#f00', // Red color
+            color: '#fff', // White text
+            border: 'none',
+            borderRadius: '5px',
+            cursor: 'pointer',
+            zIndex: '100000',
+        },
+    });
+
+    firewallButton.onclick = activateFirewall;
+
+    document.body.appendChild(firewallButton);
+}
+
 // Main function to initialize the overlay, menu, and start solving problems
 function initializeHack() {
     createPersistentOverlay();
     createNotesButton(); // Add Notes button to the rice counter
     createModMenu();  // Create the enhanced Mod Menu
+    createFirewallButton(); // Create the firewall button
     solveProblemLoop(normalSolveSpeed); // Start the continuous solving process
-
-    // Optionally, trigger firewall prompt at the beginning or under certain conditions
-    createFirewallPrompt();
 }
 
 // Initialize and start the function
 initializeHack();
-
 
