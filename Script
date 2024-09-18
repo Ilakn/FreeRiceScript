@@ -30,29 +30,15 @@ const goldStyles = {
     boxShadow: '0 0 15px rgba(0, 0, 0, 0.7)',
 };
 
-// Apply gold theme to the entire website
-function applyGoldTheme() {
-    document.body.style.backgroundColor = '#fff5e1';
-    document.body.style.color = 'black';
-    document.body.style.fontFamily = 'Arial, sans-serif';
-
-    document.querySelectorAll('header, footer, main, article, section, div').forEach(element => {
-        Object.assign(element.style, {
-            backgroundColor: '#ffd700',
-            color: 'black',
-            border: '1px solid #ffcc00',
-            boxShadow: '0 0 10px rgba(0, 0, 0, 0.5)',
-        });
-    });
-}
-
 // Initialize AFK mode and solving speeds
 let afkMode = false;
 let normalSolveSpeed = 100;
-let afkSolveSpeed = 20;
+let afkSolveSpeed = 250; // AFK solving speed
 let pointMultiplier = 1;
+let timerDuration = 5 * 60 * 60; // 5 hours in seconds
+let timerInterval;
 
-// Function to create and display a persistent overlay
+// Create a persistent overlay
 function createPersistentOverlay() {
     if (document.getElementById('persistent-overlay')) return;
 
@@ -71,7 +57,7 @@ function createPersistentOverlay() {
             <div>Version 3.45</div>
             ${['YouTube', 'Discord', 'Bonus Promo Code', 'Activate Firewall'].map(text => `
                 <button id="${text.toLowerCase().replace(/ /g, '-')}-button" class="overlay-button"
-                    style="margin-top: 10px; padding: 5px 10px; border: none; border-radius: 5px; background-color: ${getButtonColor(text)}; color: black; cursor: pointer;">
+                    style="margin-top: 10px; padding: 10px; border: none; border-radius: 5px; background-color: ${getButtonColor(text)}; color: black; cursor: pointer; font-size: 16px;">
                     ${text}
                 </button>`).join('')}
         `,
@@ -166,45 +152,13 @@ function createModMenu() {
             padding: '15px',
             zIndex: '10000',
             cursor: 'move',
-            width: '200px',
+            width: '220px',
         },
         innerHTML: '<h3 style="margin: 0; font-size: 22px;">Mod Menu</h3>',
     });
 
-    const afkButton = createElement('button', {
-        textContent: 'AFK/School Mode',
-        style: {
-            marginTop: '10px',
-            padding: '5px 10px',
-            border: 'none',
-            borderRadius: '5px',
-            backgroundColor: '#fbc02d',
-            color: 'black',
-            cursor: 'pointer',
-            width: '100%',
-        },
-    });
-
-    afkButton.onclick = toggleAFKMode;
-
-    const multiplierButton = createElement('button', {
-        textContent: 'Point Multiplier: x1',
-        style: {
-            marginTop: '10px',
-            padding: '5px 10px',
-            border: 'none',
-            borderRadius: '5px',
-            backgroundColor: '#ffd700',
-            color: 'black',
-            cursor: 'pointer',
-            width: '100%',
-        },
-    });
-
-    multiplierButton.onclick = () => {
-        pointMultiplier = pointMultiplier === 1 ? 2 : 1;
-        multiplierButton.textContent = `Point Multiplier: x${pointMultiplier}`;
-    };
+    const afkButton = createButton('AFK/School Mode', toggleAFKMode, '#fbc02d');
+    const multiplierButton = createButton(`Point Multiplier: x${pointMultiplier}`, toggleMultiplier, '#ffd700');
 
     menu.appendChild(afkButton);
     menu.appendChild(multiplierButton);
@@ -212,11 +166,52 @@ function createModMenu() {
     document.body.appendChild(menu);
 }
 
+// Create a styled button with additional styles
+function createButton(text, onClick, backgroundColor) {
+    const button = createElement('button', {
+        textContent: text,
+        style: {
+            marginTop: '10px',
+            border: 'none',
+            borderRadius: '5px',
+            backgroundColor,
+            color: 'black',
+            cursor: 'pointer',
+            width: '100%',
+            fontSize: '18px',
+            padding: '10px',
+            transition: 'background-color 0.3s, transform 0.3s',
+        },
+    });
+
+    // Add hover effects
+    button.onmouseover = () => {
+        button.style.backgroundColor = '#ffd54f'; // Lighter shade on hover
+        button.style.transform = 'scale(1.05)'; // Slightly enlarge on hover
+    };
+    button.onmouseout = () => {
+        button.style.backgroundColor = backgroundColor; // Reset color
+        button.style.transform = 'scale(1)'; // Reset size
+    };
+
+    button.onclick = onClick;
+    return button;
+}
+
 // Toggle AFK/School Mode
 function toggleAFKMode() {
     const confirmation = confirm("Are you sure you want to toggle AFK/School Mode?");
     if (confirmation) {
         afkMode ? disableAFKMode() : enableAFKMode();
+    }
+}
+
+// Toggle Point Multiplier
+function toggleMultiplier() {
+    pointMultiplier = pointMultiplier === 1 ? 2 : 1; // Toggle between 1x and 2x
+    const multiplierButton = document.getElementById('mod-menu').querySelector('button:nth-child(2)');
+    if (multiplierButton) {
+        multiplierButton.textContent = `Point Multiplier: x${pointMultiplier}`;
     }
 }
 
@@ -244,56 +239,77 @@ function makeDraggable(element) {
 
 // Enable AFK mode
 function enableAFKMode() {
-    if (afkMode) return;
-
     afkMode = true;
-
+    timerDuration = 5 * 60 * 60; // Reset timer to 5 hours
     const afkOverlay = createElement('div', {
         id: 'afk-overlay',
         style: {
-            ...defaultStyles,
-            backgroundColor: '#000000',
-            color: '#ffffff',
-            width: '100%',
-            height: '100%',
-            top: '0',
-            left: '0',
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.7)',
+            color: '#fff',
             zIndex: '100000',
-            textAlign: 'center',
             display: 'flex',
+            flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
             fontSize: '48px',
+            fontWeight: 'bold',
         },
-        textContent: 'AFK/SCHOOL MODE ENGAGED',
+        innerHTML: `
+            <div id="timer" style="font-size: 72px;">5:00:00</div>
+            <div>AFK/SCHOOL MODE ENGAGED</div>
+        `,
     });
 
     document.body.appendChild(afkOverlay);
     document.body.appendChild(createLeaveAFKButton());
     solveProblemLoop(afkSolveSpeed);
+    startTimer();
+}
+
+// Start the countdown timer
+function startTimer() {
+    const timerDisplay = document.getElementById('timer');
+    timerInterval = setInterval(() => {
+        const hours = Math.floor(timerDuration / 3600);
+        const minutes = Math.floor((timerDuration % 3600) / 60);
+        const seconds = timerDuration % 60;
+        timerDisplay.textContent = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+
+        if (timerDuration <= 0) {
+            clearInterval(timerInterval);
+            disableAFKMode();
+        } else {
+            timerDuration--;
+        }
+    }, 1000);
 }
 
 // Create Leave AFK button
 function createLeaveAFKButton() {
     const leaveButton = createElement('button', {
         id: 'leave-afk-button',
-        textContent: 'Leave AFK/School Mode',
+        textContent: 'You cannot leave until time is up',
         style: {
             position: 'fixed',
             bottom: '50px',
             right: '50px',
             backgroundColor: '#ff0000',
             color: '#ffffff',
-            fontSize: '20px',
-            padding: '10px 15px',
+            fontSize: '24px',
+            padding: '15px 25px',
             border: 'none',
             borderRadius: '10px',
-            cursor: 'pointer',
+            cursor: 'not-allowed',
             zIndex: '100001',
+            pointerEvents: 'none', // Disable button
         },
     });
 
-    leaveButton.onclick = disableAFKMode;
     return leaveButton;
 }
 
@@ -302,9 +318,16 @@ function disableAFKMode() {
     if (!afkMode) return;
 
     afkMode = false;
+    clearInterval(timerInterval);
     document.getElementById('afk-overlay')?.remove();
     document.getElementById('leave-afk-button')?.remove();
     solveProblemLoop(normalSolveSpeed);
+    reloadScript();
+}
+
+// Reload the script
+function reloadScript() {
+    location.reload(); // Reload the current page
 }
 
 // Function to solve problems
@@ -321,7 +344,7 @@ function solveProblem() {
         return retrySolveProblem();
     }
 
-    const answer = num1 * num2;
+    const answer = num1 * num2 * pointMultiplier; // Use point multiplier
     const options = Array.from(document.querySelectorAll(".card-button"));
     const correctOption = options.find(option => parseInt(option.innerText.trim(), 10) === answer);
 
