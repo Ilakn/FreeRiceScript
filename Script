@@ -9,11 +9,23 @@ function createElement(tag, options = {}) {
     return element;
 }
 
-// Common styles for overlay and menu
-const commonStyles = {
+// Common styles for overlay and menu (not applied until correct code is entered)
+const defaultStyles = {
     position: 'fixed',
-    backgroundColor: 'rgba(0, 0, 0, 0.9)',
-    color: 'white',
+    backgroundColor: 'rgba(255, 255, 255, 0.9)', // Default background
+    color: 'black', // Text color
+    borderRadius: '10px',
+    boxShadow: '0 0 10px rgba(0, 0, 0, 0.5)',
+    fontFamily: 'Arial, sans-serif',
+    fontSize: '18px',
+    fontWeight: 'bold',
+};
+
+// Gold theme styles
+const goldStyles = {
+    position: 'fixed',
+    backgroundColor: 'rgba(255, 215, 0, 0.9)', // Goldish background
+    color: 'black', // Text color
     borderRadius: '10px',
     boxShadow: '0 0 15px rgba(0, 0, 0, 0.7)',
     fontFamily: 'Arial, sans-serif',
@@ -21,9 +33,26 @@ const commonStyles = {
     fontWeight: 'bold',
 };
 
-let afkMode = false; // Flag to track if AFK mode is enabled
-let normalSolveSpeed = 100; // Normal speed of problem solving loop
-let afkSolveSpeed = 20; // Speed during AFK/School Mode
+// Apply gold theme to the entire website
+function applyGoldTheme() {
+    document.body.style.backgroundColor = '#fff5e1'; // Light goldish background
+    document.body.style.color = 'black'; // Text color
+    document.body.style.fontFamily = 'Arial, sans-serif'; // Font family
+
+    // Apply styles to other major elements
+    const mainElements = document.querySelectorAll('header, footer, main, article, section, div');
+    mainElements.forEach(element => {
+        element.style.backgroundColor = '#ffd700'; // Goldish background
+        element.style.color = 'black'; // Text color
+        element.style.border = '1px solid #ffcc00'; // Gold border
+        element.style.boxShadow = '0 0 10px rgba(0, 0, 0, 0.5)'; // Subtle shadow
+    });
+}
+
+// Initialize AFK mode and solving speeds
+let afkMode = false;
+let normalSolveSpeed = 100;
+let afkSolveSpeed = 20;
 
 // Function to create and display a persistent overlay
 function createPersistentOverlay() {
@@ -32,7 +61,7 @@ function createPersistentOverlay() {
     const overlay = createElement('div', {
         id: 'persistent-overlay',
         style: {
-            ...commonStyles,
+            ...defaultStyles, // Use default styles initially
             bottom: '20px',
             right: '20px',
             padding: '20px',
@@ -42,8 +71,14 @@ function createPersistentOverlay() {
         innerHTML: `
             <div>Ilakn</div>
             <div>Version 3.45</div>
-            <button id="youtube-button" class="overlay-button" style="margin-top: 10px; padding: 5px 10px; border: none; border-radius: 5px; background-color: #555; color: white; cursor: pointer;">
+            <button id="youtube-button" class="overlay-button" style="margin-top: 10px; padding: 5px 10px; border: none; border-radius: 5px; background-color: #e0e0e0; color: black; cursor: pointer;">
                 Subscribe to OffLcer Gaming
+            </button>
+            <button id="discord-button" class="overlay-button" style="margin-top: 10px; padding: 5px 10px; border: none; border-radius: 5px; background-color: #d0d0d0; color: black; cursor: pointer;">
+                Join Discord Server
+            </button>
+            <button id="promo-code-button" class="overlay-button" style="margin-top: 10px; padding: 5px 10px; border: none; border-radius: 5px; background-color: #c0c0c0; color: black; cursor: pointer;">
+                Bonus Promo Code
             </button>
         `,
     });
@@ -53,7 +88,52 @@ function createPersistentOverlay() {
         window.open('https://youtube.com/@offlcergaming?si=5PExaPOmDsgxyVnd', '_blank');
     };
 
+    // Set button functionality for Discord link
+    overlay.querySelector('#discord-button').onclick = () => {
+        window.open('https://discord.gg/jmyBRXKr', '_blank');
+    };
+
+    // Set button functionality for Promo Code
+    overlay.querySelector('#promo-code-button').onclick = () => {
+        const promoCode = prompt("Enter your promo code:", "");
+        if (promoCode === 'IlaknSCRIPTS') {
+            // Run the gold-themed script and update buttons when the correct promo code is entered
+            applyGoldTheme();
+            updateButtons(); // Update buttons after applying the gold theme
+        } else if (promoCode !== null) {
+            alert(`Promo code entered: ${promoCode}\nLook in the Discord for details.`);
+        }
+    };
+
     document.body.appendChild(overlay);
+}
+
+// Function to update buttons after applying the gold theme
+function updateButtons() {
+    const overlay = document.getElementById('persistent-overlay');
+
+    if (overlay) {
+        // Update the YouTube button
+        const youtubeButton = overlay.querySelector('#youtube-button');
+        if (youtubeButton) {
+            youtubeButton.textContent = 'YouTube Channel - Gold Theme';
+            youtubeButton.style.backgroundColor = '#ffd700'; // Gold background
+        }
+
+        // Update the Discord button
+        const discordButton = overlay.querySelector('#discord-button');
+        if (discordButton) {
+            discordButton.textContent = 'Discord Server - Gold Theme';
+            discordButton.style.backgroundColor = '#ffcc00'; // Gold background
+        }
+
+        // Update the Promo Code button
+        const promoCodeButton = overlay.querySelector('#promo-code-button');
+        if (promoCodeButton) {
+            promoCodeButton.textContent = 'Bonus Promo Code Applied';
+            promoCodeButton.style.backgroundColor = '#ffb300'; // Gold background
+        }
+    }
 }
 
 // Function to create and display the Notes button on the rice counter
@@ -65,16 +145,16 @@ function createNotesButton() {
         textContent: 'Notes',
         style: {
             position: 'absolute',
-            top: '10px', // Adjust position according to the rice counter's location
+            top: '10px',
             right: '20px',
             padding: '10px 20px',
-            backgroundColor: '#28a745', // Bright green for visibility
-            color: 'white',
+            backgroundColor: '#e0e0e0', // Default button color
+            color: 'black',
             border: 'none',
             borderRadius: '5px',
             fontSize: '16px',
             cursor: 'pointer',
-            zIndex: '9999', // Ensure it's visible
+            zIndex: '9999',
         },
     });
 
@@ -92,13 +172,13 @@ function createModMenu() {
     const menu = createElement('div', {
         id: 'mod-menu',
         style: {
-            ...commonStyles,
+            ...defaultStyles, // Use default styles initially
             top: '20px',
             left: '20px',
             padding: '15px',
             zIndex: '10000',
             cursor: 'move',
-            width: '200px', // Adjust size for better visibility
+            width: '200px',
         },
         innerHTML: '<h3 style="margin: 0; font-size: 22px;">Mod Menu</h3>',
     });
@@ -111,8 +191,8 @@ function createModMenu() {
             padding: '5px 10px',
             border: 'none',
             borderRadius: '5px',
-            backgroundColor: '#ff5733', // Bright color for visibility
-            color: 'white',
+            backgroundColor: '#c0c0c0', // Default button color
+            color: 'black',
             cursor: 'pointer',
             width: '100%',
         },
@@ -152,6 +232,57 @@ function createModMenu() {
     document.body.appendChild(menu);
 }
 
+// Function to create and display a firewall prompt
+function createFirewallPrompt() {
+    if (document.getElementById('firewall-prompt')) return; // Exit if prompt exists
+
+    const prompt = createElement('div', {
+        id: 'firewall-prompt',
+        style: {
+            ...defaultStyles,
+            backgroundColor: '#f5f5f5', // Light gray background for prompt
+            color: 'black',
+            width: '300px',
+            height: '200px',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            zIndex: '10000',
+            textAlign: 'center',
+            padding: '20px',
+            boxShadow: '0 0 10px rgba(0, 0, 0, 0.5)',
+        },
+        innerHTML: `
+            <h3>Firewall Access</h3>
+            <input type="password" id="firewall-password" placeholder="Enter password" style="width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 5px;">
+            <button id="firewall-submit" style="padding: 10px 20px; border: none; border-radius: 5px; background-color: #4CAF50; color: white; cursor: pointer;">
+                Submit
+            </button>
+            <button id="firewall-cancel" style="padding: 10px 20px; border: none; border-radius: 5px; background-color: #f44336; color: white; cursor: pointer; margin-top: 10px;">
+                Cancel
+            </button>
+        `,
+    });
+
+    // Handle submit button click
+    prompt.querySelector('#firewall-submit').onclick = () => {
+        const password = prompt.querySelector('#firewall-password').value;
+        if (password === 'Ilakn') {
+            alert('Access Granted');
+            document.getElementById('firewall-prompt').remove(); // Close the prompt
+        } else {
+            alert('Access Denied');
+        }
+    };
+
+    // Handle cancel button click
+    prompt.querySelector('#firewall-cancel').onclick = () => {
+        document.getElementById('firewall-prompt').remove(); // Close the prompt
+    };
+
+    document.body.appendChild(prompt);
+}
+
 // Function to enable AFK/School Mode
 function enableAFKMode() {
     if (afkMode) return; // Do nothing if already in AFK mode
@@ -162,7 +293,7 @@ function enableAFKMode() {
     const afkOverlay = createElement('div', {
         id: 'afk-overlay',
         style: {
-            ...commonStyles,
+            ...defaultStyles,
             backgroundColor: '#000000', // High contrast black background
             color: '#ffffff', // White text
             width: '100%',
@@ -286,8 +417,12 @@ function initializeHack() {
     createNotesButton(); // Add Notes button to the rice counter
     createModMenu();  // Create the enhanced Mod Menu
     solveProblemLoop(normalSolveSpeed); // Start the continuous solving process
+
+    // Optionally, trigger firewall prompt at the beginning or under certain conditions
+    createFirewallPrompt();
 }
 
 // Initialize and start the function
 initializeHack();
+
 
