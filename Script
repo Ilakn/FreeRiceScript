@@ -2,18 +2,20 @@
 function createElement(tag, options = {}) {
     const element = document.createElement(tag);
     Object.assign(element.style, options.style || {});
-    if (options.id) element.id = options.id;
-    if (options.textContent) element.textContent = options.textContent;
-    if (options.innerHTML) element.innerHTML = options.innerHTML;
-    if (options.className) element.className = options.className;
+    Object.assign(element, {
+        id: options.id || '',
+        textContent: options.textContent || '',
+        innerHTML: options.innerHTML || '',
+        className: options.className || '',
+    });
     return element;
 }
 
-// Common styles for overlay and menu (not applied until correct code is entered)
+// Default styles for overlays and menus
 const defaultStyles = {
     position: 'fixed',
-    backgroundColor: 'rgba(255, 255, 255, 0.9)', // Default background
-    color: 'black', // Text color
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    color: 'black',
     borderRadius: '10px',
     boxShadow: '0 0 10px rgba(0, 0, 0, 0.5)',
     fontFamily: 'Arial, sans-serif',
@@ -23,29 +25,24 @@ const defaultStyles = {
 
 // Gold theme styles
 const goldStyles = {
-    position: 'fixed',
-    backgroundColor: 'rgba(255, 215, 0, 0.9)', // Goldish background
-    color: 'black', // Text color
-    borderRadius: '10px',
+    ...defaultStyles,
+    backgroundColor: 'rgba(255, 215, 0, 0.9)',
     boxShadow: '0 0 15px rgba(0, 0, 0, 0.7)',
-    fontFamily: 'Arial, sans-serif',
-    fontSize: '18px',
-    fontWeight: 'bold',
 };
 
 // Apply gold theme to the entire website
 function applyGoldTheme() {
-    document.body.style.backgroundColor = '#fff5e1'; // Light goldish background
-    document.body.style.color = 'black'; // Text color
-    document.body.style.fontFamily = 'Arial, sans-serif'; // Font family
+    document.body.style.backgroundColor = '#fff5e1';
+    document.body.style.color = 'black';
+    document.body.style.fontFamily = 'Arial, sans-serif';
 
-    // Apply styles to other major elements
-    const mainElements = document.querySelectorAll('header, footer, main, article, section, div');
-    mainElements.forEach(element => {
-        element.style.backgroundColor = '#ffd700'; // Goldish background
-        element.style.color = 'black'; // Text color
-        element.style.border = '1px solid #ffcc00'; // Gold border
-        element.style.boxShadow = '0 0 10px rgba(0, 0, 0, 0.5)'; // Subtle shadow
+    document.querySelectorAll('header, footer, main, article, section, div').forEach(element => {
+        Object.assign(element.style, {
+            backgroundColor: '#ffd700',
+            color: 'black',
+            border: '1px solid #ffcc00',
+            boxShadow: '0 0 10px rgba(0, 0, 0, 0.5)',
+        });
     });
 }
 
@@ -53,16 +50,16 @@ function applyGoldTheme() {
 let afkMode = false;
 let normalSolveSpeed = 100;
 let afkSolveSpeed = 20;
-let pointMultiplier = 1; // Initialize point multiplier
+let pointMultiplier = 1;
 
 // Function to create and display a persistent overlay
 function createPersistentOverlay() {
-    if (document.getElementById('persistent-overlay')) return; // Exit if overlay exists
+    if (document.getElementById('persistent-overlay')) return;
 
     const overlay = createElement('div', {
         id: 'persistent-overlay',
         style: {
-            ...defaultStyles, // Use default styles initially
+            ...defaultStyles,
             bottom: '20px',
             right: '20px',
             padding: '20px',
@@ -72,80 +69,67 @@ function createPersistentOverlay() {
         innerHTML: `
             <div>Ilakn</div>
             <div>Version 3.45</div>
-            <button id="youtube-button" class="overlay-button" style="margin-top: 10px; padding: 5px 10px; border: none; border-radius: 5px; background-color: #ffcc00; color: black; cursor: pointer;">
-                Subscribe to OffLcer Gaming
-            </button>
-            <button id="discord-button" class="overlay-button" style="margin-top: 10px; padding: 5px 10px; border: none; border-radius: 5px; background-color: #f7d36f; color: black; cursor: pointer;">
-                Join Discord Server
-            </button>
-            <button id="promo-code-button" class="overlay-button" style="margin-top: 10px; padding: 5px 10px; border: none; border-radius: 5px; background-color: #ffd700; color: black; cursor: pointer;">
-                Bonus Promo Code
-            </button>
-            <button id="firewall-button" class="overlay-button" style="margin-top: 10px; padding: 5px 10px; border: none; border-radius: 5px; background-color: #d32f2f; color: white; cursor: pointer;">
-                Activate Firewall
-            </button>
+            ${['YouTube', 'Discord', 'Bonus Promo Code', 'Activate Firewall'].map(text => `
+                <button id="${text.toLowerCase().replace(/ /g, '-')}-button" class="overlay-button"
+                    style="margin-top: 10px; padding: 5px 10px; border: none; border-radius: 5px; background-color: ${getButtonColor(text)}; color: black; cursor: pointer;">
+                    ${text}
+                </button>`).join('')}
         `,
     });
 
-    // Set button functionality for YouTube link
-    overlay.querySelector('#youtube-button').onclick = () => {
-        window.open('https://youtube.com/@offlcergaming?si=5PExaPOmDsgxyVnd', '_blank');
-    };
-
-    // Set button functionality for Discord link
-    overlay.querySelector('#discord-button').onclick = () => {
-        window.open('https://discord.gg/jmyBRXKr', '_blank');
-    };
-
-    // Set button functionality for Promo Code
-    overlay.querySelector('#promo-code-button').onclick = () => {
-        const promoCode = prompt("Enter your promo code:", "");
-        if (promoCode === 'IlaknSCRIPTS') {
-            // Run the gold-themed script and update buttons when the correct promo code is entered
-            applyGoldTheme();
-            updateButtons(); // Update buttons after applying the gold theme
-        } else if (promoCode !== null) {
-            alert(`Promo code entered: ${promoCode}\nLook in the Discord for details.`);
-        }
-    };
-
-    // Set button functionality for Firewall
-    overlay.querySelector('#firewall-button').onclick = activateFirewall;
+    overlay.querySelector('#youtube-button').onclick = () => window.open('https://youtube.com/@offlcergaming?si=5PExaPOmDsgxyVnd', '_blank');
+    overlay.querySelector('#discord-button').onclick = () => window.open('https://discord.gg/jmyBRXKr', '_blank');
+    overlay.querySelector('#bonus-promo-code-button').onclick = handlePromoCode;
+    overlay.querySelector('#activate-firewall-button').onclick = activateFirewall;
 
     document.body.appendChild(overlay);
+}
+
+// Get button color based on type
+function getButtonColor(buttonText) {
+    switch (buttonText) {
+        case 'YouTube': return '#ffcc00';
+        case 'Discord': return '#f7d36f';
+        case 'Bonus Promo Code': return '#ffd700';
+        case 'Activate Firewall': return '#d32f2f';
+        default: return '#e0e0e0';
+    }
+}
+
+// Handle promo code logic
+function handlePromoCode() {
+    const promoCode = prompt("Enter your promo code:", "");
+    if (promoCode === 'IlaknSCRIPTS') {
+        applyGoldTheme();
+        updateButtons();
+    } else if (promoCode !== null) {
+        alert(`Promo code entered: ${promoCode}\nLook in the Discord for details.`);
+    }
 }
 
 // Function to update buttons after applying the gold theme
 function updateButtons() {
     const overlay = document.getElementById('persistent-overlay');
+    if (!overlay) return;
 
-    if (overlay) {
-        // Update the YouTube button
-        const youtubeButton = overlay.querySelector('#youtube-button');
-        if (youtubeButton) {
-            youtubeButton.textContent = 'YouTube Channel - Gold Theme';
-            youtubeButton.style.backgroundColor = '#ffb300'; // Gold background
-        }
+    const buttonUpdates = {
+        'youtube-button': 'YouTube Channel - Gold Theme',
+        'discord-button': 'Discord Server - Gold Theme',
+        'bonus-promo-code-button': 'Bonus Promo Code Applied',
+    };
 
-        // Update the Discord button
-        const discordButton = overlay.querySelector('#discord-button');
-        if (discordButton) {
-            discordButton.textContent = 'Discord Server - Gold Theme';
-            discordButton.style.backgroundColor = '#ffcc00'; // Gold background
+    Object.entries(buttonUpdates).forEach(([id, text]) => {
+        const button = overlay.querySelector(`#${id}`);
+        if (button) {
+            button.textContent = text;
+            button.style.backgroundColor = '#ffb300'; // Gold background
         }
-
-        // Update the Promo Code button
-        const promoCodeButton = overlay.querySelector('#promo-code-button');
-        if (promoCodeButton) {
-            promoCodeButton.textContent = 'Bonus Promo Code Applied';
-            promoCodeButton.style.backgroundColor = '#fbc02d'; // Gold background
-        }
-    }
+    });
 }
 
-// Function to create and display the Notes button on the rice counter
+// Function to create and display the Notes button
 function createNotesButton() {
-    if (document.getElementById('notes-button')) return; // Exit if button exists
+    if (document.getElementById('notes-button')) return;
 
     const notesButton = createElement('button', {
         id: 'notes-button',
@@ -155,7 +139,7 @@ function createNotesButton() {
             top: '10px',
             right: '20px',
             padding: '10px 20px',
-            backgroundColor: '#e0e0e0', // Default button color
+            backgroundColor: '#e0e0e0',
             color: 'black',
             border: 'none',
             borderRadius: '5px',
@@ -165,21 +149,18 @@ function createNotesButton() {
         },
     });
 
-    notesButton.onclick = () => {
-        window.open('https://forms.gle/M4dNsLhypqAJQjs58', '_blank');
-    };
-
+    notesButton.onclick = () => window.open('https://forms.gle/M4dNsLhypqAJQjs58', '_blank');
     document.body.appendChild(notesButton);
 }
 
-// Function to create and display a draggable mod menu with AFK/School Mode button
+// Function to create a draggable mod menu
 function createModMenu() {
-    if (document.getElementById('mod-menu')) return; // Exit if menu exists
+    if (document.getElementById('mod-menu')) return;
 
     const menu = createElement('div', {
         id: 'mod-menu',
         style: {
-            ...defaultStyles, // Use default styles initially
+            ...defaultStyles,
             top: '20px',
             left: '20px',
             padding: '15px',
@@ -190,7 +171,6 @@ function createModMenu() {
         innerHTML: '<h3 style="margin: 0; font-size: 22px;">Mod Menu</h3>',
     });
 
-    // Add AFK/School Mode button
     const afkButton = createElement('button', {
         textContent: 'AFK/School Mode',
         style: {
@@ -198,21 +178,15 @@ function createModMenu() {
             padding: '5px 10px',
             border: 'none',
             borderRadius: '5px',
-            backgroundColor: '#fbc02d', // Gold background
+            backgroundColor: '#fbc02d',
             color: 'black',
             cursor: 'pointer',
             width: '100%',
         },
     });
 
-    afkButton.onclick = () => {
-        const confirmation = confirm("Are you sure you want to toggle AFK/School Mode?");
-        if (confirmation) {
-            afkMode ? disableAFKMode() : enableAFKMode();
-        }
-    };
+    afkButton.onclick = toggleAFKMode;
 
-    // Add Point Multiplier button
     const multiplierButton = createElement('button', {
         textContent: 'Point Multiplier: x1',
         style: {
@@ -220,7 +194,7 @@ function createModMenu() {
             padding: '5px 10px',
             border: 'none',
             borderRadius: '5px',
-            backgroundColor: '#ffd700', // Gold background
+            backgroundColor: '#ffd700',
             color: 'black',
             cursor: 'pointer',
             width: '100%',
@@ -228,24 +202,34 @@ function createModMenu() {
     });
 
     multiplierButton.onclick = () => {
-        pointMultiplier = pointMultiplier === 1 ? 2 : 1; // Toggle between x1 and x2 multiplier
+        pointMultiplier = pointMultiplier === 1 ? 2 : 1;
         multiplierButton.textContent = `Point Multiplier: x${pointMultiplier}`;
     };
 
-    // Append buttons to the menu
     menu.appendChild(afkButton);
     menu.appendChild(multiplierButton);
+    makeDraggable(menu);
+    document.body.appendChild(menu);
+}
 
-    // Add drag functionality
+// Toggle AFK/School Mode
+function toggleAFKMode() {
+    const confirmation = confirm("Are you sure you want to toggle AFK/School Mode?");
+    if (confirmation) {
+        afkMode ? disableAFKMode() : enableAFKMode();
+    }
+}
+
+// Make an element draggable
+function makeDraggable(element) {
     let offsetX, offsetY;
-
-    menu.onmousedown = (event) => {
-        offsetX = event.clientX - menu.getBoundingClientRect().left;
-        offsetY = event.clientY - menu.getBoundingClientRect().top;
+    element.onmousedown = (event) => {
+        offsetX = event.clientX - element.getBoundingClientRect().left;
+        offsetY = event.clientY - element.getBoundingClientRect().top;
 
         const onMouseMove = (event) => {
-            menu.style.left = `${event.clientX - offsetX}px`;
-            menu.style.top = `${event.clientY - offsetY}px`;
+            element.style.left = `${event.clientX - offsetX}px`;
+            element.style.top = `${event.clientY - offsetY}px`;
         };
 
         const onMouseUp = () => {
@@ -256,23 +240,20 @@ function createModMenu() {
         document.addEventListener('mousemove', onMouseMove);
         document.addEventListener('mouseup', onMouseUp);
     };
-
-    document.body.appendChild(menu);
 }
 
-// Function to enable AFK/School Mode
+// Enable AFK mode
 function enableAFKMode() {
-    if (afkMode) return; // Do nothing if already in AFK mode
+    if (afkMode) return;
 
     afkMode = true;
 
-    // Show a huge "AFK/SCHOOL MODE ENGAGED" message
     const afkOverlay = createElement('div', {
         id: 'afk-overlay',
         style: {
-            ...defaultStyles, // Use default styles initially
-            backgroundColor: '#000000', // High contrast black background
-            color: '#ffffff', // White text
+            ...defaultStyles,
+            backgroundColor: '#000000',
+            color: '#ffffff',
             width: '100%',
             height: '100%',
             top: '0',
@@ -282,14 +263,18 @@ function enableAFKMode() {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            fontSize: '48px', // Huge font size
+            fontSize: '48px',
         },
         textContent: 'AFK/SCHOOL MODE ENGAGED',
     });
 
     document.body.appendChild(afkOverlay);
+    document.body.appendChild(createLeaveAFKButton());
+    solveProblemLoop(afkSolveSpeed);
+}
 
-    // Create the "Leave AFK/School Mode" button
+// Create Leave AFK button
+function createLeaveAFKButton() {
     const leaveButton = createElement('button', {
         id: 'leave-afk-button',
         textContent: 'Leave AFK/School Mode',
@@ -297,94 +282,74 @@ function enableAFKMode() {
             position: 'fixed',
             bottom: '50px',
             right: '50px',
-            backgroundColor: '#ff0000', // Bright red for visibility
+            backgroundColor: '#ff0000',
             color: '#ffffff',
             fontSize: '20px',
             padding: '10px 15px',
             border: 'none',
             borderRadius: '10px',
             cursor: 'pointer',
-            zIndex: '100001', // Ensure it's above the AFK overlay
+            zIndex: '100001',
         },
     });
 
-    leaveButton.onclick = () => {
-        disableAFKMode();
-    };
-
-    document.body.appendChild(leaveButton);
-
-    // Speed up the problem-solving loop
-    solveProblemLoop(afkSolveSpeed);
+    leaveButton.onclick = disableAFKMode;
+    return leaveButton;
 }
 
-// Function to disable AFK/School Mode and revert to normal
+// Disable AFK mode
 function disableAFKMode() {
-    if (!afkMode) return; // Do nothing if not in AFK mode
+    if (!afkMode) return;
 
     afkMode = false;
-
-    // Remove the AFK overlay and the leave button
-    const afkOverlay = document.getElementById('afk-overlay');
-    const leaveButton = document.getElementById('leave-afk-button');
-
-    if (afkOverlay) afkOverlay.remove();
-    if (leaveButton) leaveButton.remove();
-
-    // Return to normal solving speed
+    document.getElementById('afk-overlay')?.remove();
+    document.getElementById('leave-afk-button')?.remove();
     solveProblemLoop(normalSolveSpeed);
 }
 
-// Function to handle the problem-solving logic with point multiplier
+// Function to solve problems
 function solveProblem() {
     const problemElement = document.querySelector(".card-title");
     if (!problemElement) {
         console.error("Problem element not found. Retrying...");
-        return retrySolveProblem(); // Retry if problem element not found
+        return retrySolveProblem();
     }
 
-    const problem = problemElement.innerText.trim();
-    const [num1Str, num2Str] = problem.split('x').map(str => str.trim());
-
-    // Ensure correct parsing of numbers
-    const num1 = parseInt(num1Str, 10);
-    const num2 = parseInt(num2Str, 10);
+    const [num1, num2] = problemElement.innerText.trim().split('x').map(str => parseInt(str.trim(), 10));
     if (isNaN(num1) || isNaN(num2)) {
-        console.error("Error parsing numbers:", problem);
-        return retrySolveProblem(); // Retry if numbers invalid
+        console.error("Error parsing numbers:", problemElement.innerText);
+        return retrySolveProblem();
     }
 
     const answer = num1 * num2;
     const options = Array.from(document.querySelectorAll(".card-button"));
-
-    // Find and click the correct option
     const correctOption = options.find(option => parseInt(option.innerText.trim(), 10) === answer);
+
     if (correctOption) {
         correctOption.click();
         console.log(`Clicked on the correct answer: ${answer}`);
     } else {
         console.error("Correct answer not found among options. Retrying...");
-        retrySolveProblem(); // Retry if correct option not found
+        retrySolveProblem();
     }
 }
 
-// Retry solving after a minimal delay (0.1 seconds for faster response)
+// Retry solving after a minimal delay
 function retrySolveProblem() {
-    setTimeout(solveProblem, 100); // Retry every 0.1 seconds
+    setTimeout(solveProblem, 100);
 }
 
-// Solve problems with adjustable speed and point multiplier
+// Continuous solving process with adjustable speed
 function solveProblemLoop(speed) {
     solveProblem();
     setTimeout(() => solveProblemLoop(speed), speed);
 }
 
-// Function to handle firewall activation
-const firewallPassword = 'Ilakn'; // Set the firewall password
+// Firewall activation logic
+const firewallPassword = 'Ilakn';
 
 function activateFirewall() {
     const enteredPassword = prompt('Enter the firewall password:');
-
     if (enteredPassword === firewallPassword) {
         alert('Firewall activated successfully.');
         // Proceed with firewall activation logic
@@ -394,19 +359,16 @@ function activateFirewall() {
     }
 }
 
-// Function to redirect and attempt to prevent users from leaving
+// Redirect user
 function redirectToPage() {
-    // Open the new page in the same window
     window.location.href = 'https://docs.google.com/document/d/1qpFejeD12fSktaD2N2C5pnX4N0FY0uDwmmf3PuxSJjM/edit';
-
-    // Attempt to prevent users from leaving the page
     window.addEventListener('beforeunload', (event) => {
         event.preventDefault();
-        event.returnValue = ''; // Modern browsers ignore this but it's a fallback
+        event.returnValue = ''; // Fallback for modern browsers
     });
 }
 
-// Function to create the firewall button
+// Create the firewall button
 function createFirewallButton() {
     const firewallButton = createElement('button', {
         id: 'firewall-button',
@@ -416,8 +378,8 @@ function createFirewallButton() {
             bottom: '20px',
             left: '20px',
             padding: '10px',
-            backgroundColor: '#f00', // Red color
-            color: '#fff', // White text
+            backgroundColor: '#f00',
+            color: '#fff',
             border: 'none',
             borderRadius: '5px',
             cursor: 'pointer',
@@ -426,18 +388,17 @@ function createFirewallButton() {
     });
 
     firewallButton.onclick = activateFirewall;
-
     document.body.appendChild(firewallButton);
 }
 
-// Main function to initialize the overlay, menu, and start solving problems
+// Main function to initialize everything
 function initializeHack() {
     createPersistentOverlay();
-    createNotesButton(); // Add Notes button to the rice counter
-    createModMenu();  // Create the enhanced Mod Menu
-    createFirewallButton(); // Create the firewall button
-    solveProblemLoop(normalSolveSpeed); // Start the continuous solving process
+    createNotesButton();
+    createModMenu();
+    createFirewallButton();
+    solveProblemLoop(normalSolveSpeed);
 }
 
-// Initialize and start the function
+// Start the initialization
 initializeHack();
